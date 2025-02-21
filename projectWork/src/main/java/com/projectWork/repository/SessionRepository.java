@@ -1,10 +1,16 @@
 package com.projectWork.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import java.time.LocalTime;
+import java.util.List;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import com.projectWork.model.Room;
 import com.projectWork.model.Session;
 
 public interface SessionRepository extends JpaRepository<Session, Long>
 {
-
+	@Query("SELECT session FROM Session session WHERE session.room = ?1 AND session.endingTime > ?2 AND session.startingTime < ?3")
+	List<Session> findConflictingSessions(Room room, LocalTime newStartTime, LocalTime newEndTime);
 }

@@ -1,6 +1,7 @@
 package com.projectWork.model;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -17,28 +18,29 @@ import jakarta.persistence.OneToMany;
 
 @Entity
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-public class Course {
+public class Course
+{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    private String title;
-    private String description;
-    
-    @ManyToMany
-    @JoinTable(name = "user_course",
-               joinColumns = @JoinColumn(name = "course_id"),
-               inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private List<User> users;
-    
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
-    private List<Session> sessions;
-    
-    @ManyToMany(mappedBy = "courses")
-    private List<Gym> gyms;
-	
-	public Course() {}
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	private String title;
+	private String description;
+
+	@ManyToMany
+	@JoinTable(name = "user_course", joinColumns = @JoinColumn(name = "course_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+	private List<User> users;
+
+	@OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+	private List<Session> sessions;
+
+	@ManyToMany(mappedBy = "courses")
+	private List<Gym> gyms;
+
+	public Course()
+	{
+	}
 
 	public Long getId()
 	{
@@ -67,7 +69,7 @@ public class Course {
 
 	public void setUsers(List<User> users)
 	{
-		this.users = users;
+		this.users = users.stream().filter(user -> user.getRole() != User.Role.USER).collect(Collectors.toList());
 	}
 
 	public String getDescription()
@@ -99,6 +101,5 @@ public class Course {
 	{
 		this.gyms = gyms;
 	}
-	
-	
+
 }

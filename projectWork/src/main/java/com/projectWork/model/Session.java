@@ -2,6 +2,7 @@ package com.projectWork.model;
 
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -26,6 +27,10 @@ public class Session {
     private LocalTime startingTime;
     private LocalTime endingTime;
     private Integer maxParticipants;
+    
+    @ManyToOne
+    @JoinColumn(name = "room_id")
+    private Room room;
     
     // Many Sessions belong to one Course.
     @ManyToOne
@@ -58,7 +63,10 @@ public class Session {
 
 	public void setStartingTime(LocalTime startingTime)
 	{
-		this.startingTime = startingTime;
+		if (this.endingTime != null && startingTime.isAfter(this.endingTime)) {
+            throw new IllegalArgumentException("L'orario di inizio non può essere dopo l'orario di fine.");
+        }
+        this.startingTime = startingTime;
 	}
 
 	public LocalTime getEndingTime()
@@ -68,7 +76,10 @@ public class Session {
 
 	public void setEndingTime(LocalTime endingTime)
 	{
-		this.endingTime = endingTime;
+		if (this.startingTime != null && this.startingTime.isAfter(endingTime)) {
+            throw new IllegalArgumentException("L'orario di inizio non può essere dopo l'orario di fine.");
+        }
+        this.endingTime = endingTime;
 	}
 
 	public Integer getMaxParticipants()
@@ -98,8 +109,19 @@ public class Session {
 
 	public void setUsers(List<User> users)
 	{
-		this.users = users;
+		this.users = users.stream().filter(user -> user.getRole() == User.Role.USER).collect(Collectors.toList());
 	}
+
+	public Room getRoom()
+	{
+		return room;
+	}
+
+	public void setRoom(Room room)
+	{
+		this.room = room;
+	}
+	
 	
 	
 }

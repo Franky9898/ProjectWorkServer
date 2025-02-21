@@ -69,6 +69,9 @@ public class Gym {
 	}
 	public void setStartTime(LocalTime startTime)
 	{
+		if (this.endTime != null && startTime.isAfter(this.endTime)) {
+            throw new IllegalArgumentException("L'orario di apertura non può essere dopo l'orario di chiusura");
+        }
 		this.startTime = startTime;
 	}
 	public LocalTime getEndTime()
@@ -77,7 +80,11 @@ public class Gym {
 	}
 	public void setEndTime(LocalTime endTime)
 	{
-		this.endTime = endTime;
+		
+		if (this.startTime != null && this.startTime.isAfter(endTime)) {
+            throw new IllegalArgumentException("L'orario di apertura non può essere dopo l'orario di chiusura");
+        }
+        this.endTime = endTime;
 	}
 	
 	public List<Room> getRooms()
