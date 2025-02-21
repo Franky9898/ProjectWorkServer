@@ -110,7 +110,7 @@ public class DataLoader implements CommandLineRunner
 		Course course = new Course();
 		course.setTitle("Yoga");
 		course.setDescription("Si usano le scarpe.");
-		course.setUsers(new ArrayList<>(Arrays.asList(user, admin)));
+		course.setUsers(new ArrayList<>(Arrays.asList(coach, admin)));
 		course = courseRepository.save(course);
 		
 		Course course2 = new Course();
@@ -136,12 +136,25 @@ public class DataLoader implements CommandLineRunner
 		session.setCourse(course);
 		session.setUsers(new ArrayList<>(Arrays.asList(user)));
 		session = sessionRepository.save(session);
+		
+		Session session2 = new Session();
+		session2.setStartingTime(LocalTime.of(19, 0));
+		session2.setEndingTime(LocalTime.of(20, 0));
+		session2.setMaxParticipants(13);
+		session2.setCourse(course);
+		session2.setUsers(new ArrayList<>(Arrays.asList(user,user2)));
+		session2 = sessionRepository.save(session2);
 
-		course.setSessions(new ArrayList<>(Arrays.asList(session)));
+		course.setSessions(new ArrayList<>(Arrays.asList(session, session2)));
 		courseRepository.save(course);
-
-		user.setCourses(new ArrayList<>(Arrays.asList(course)));
-		user.setSessions(new ArrayList<>(Arrays.asList(session)));
+		
+		coach.setCourses(new ArrayList<>(Arrays.asList(course, course2)));
+		admin.setCourses(new ArrayList<>(Arrays.asList(course)));
+		user2.setSessions(new ArrayList<>(Arrays.asList(session)));
+		user.setSessions(new ArrayList<>(Arrays.asList(session, session2)));
 		userRepository.save(user);
+		userRepository.save(user2);
+		userRepository.save(coach);
+		userRepository.save(admin);
 	}
 }
