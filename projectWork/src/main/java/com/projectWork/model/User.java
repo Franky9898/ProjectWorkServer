@@ -18,7 +18,9 @@ import jakarta.persistence.ManyToOne;
 public class User {
 
     public enum Role { USER, COACH, ADMIN }
-
+    
+    public static Integer secretCode = 9999;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
