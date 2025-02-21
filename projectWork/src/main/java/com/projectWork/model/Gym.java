@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 
 @Entity
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
@@ -27,11 +26,10 @@ public class Gym {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private User user;
+    @OneToMany(mappedBy = "gym", cascade = CascadeType.ALL)
+    private List<User> users;
     
-    private Day openDay;
+    private List<Day> openDays;
     private LocalTime startTime;
     private LocalTime endTime;
     
@@ -54,14 +52,17 @@ public class Gym {
 	{
 		this.id = id;
 	}
-	public User getUser()
+	
+	public List<User> getUsers()
 	{
-		return user;
+		return users;
 	}
-	public void setUser(User user)
+
+	public void setUsers(List<User> users)
 	{
-		this.user = user;
+		this.users = users;
 	}
+
 	public LocalTime getStartTime()
 	{
 		return startTime;
@@ -89,14 +90,14 @@ public class Gym {
 		this.rooms = rooms;
 	}
 
-	public Day getOpenDay()
+	public List<Day> getOpenDays()
 	{
-		return openDay;
+		return openDays;
 	}
 
-	public void setOpenDay(Day openDay)
+	public void setOpenDays(List<Day> openDays)
 	{
-		this.openDay = openDay;
+		this.openDays = openDays;
 	}
 
 	public List<Course> getCourses()
