@@ -67,20 +67,15 @@ public class TokenService {
      * @param role     il ruolo dell'utente (es. admin o user)
      * @return il token generato
      */
-    public String generateToken(String username, Role role) {
+    public String generateToken(String email, Role role) {
     	 // Genera un token univoco usando UUID
         String token = UUID.randomUUID().toString();
       
         System.out.println("Token generato: " + token); //stringa di debug in console
-		User user = userRepository.findByUsername(username) 
-        		.orElseThrow(() -> new ResourceNotFoundException("Author not found"));
-        
-        
-        	
-        	if(user.getRole().equals(Role.ADMIN)) {
+		User user = userRepository.findByEmail(email) 
+        		.orElseThrow(() -> new ResourceNotFoundException("User not found"));
         	user.setToken(token);
         	userRepository.save(user);
-        	}
         return token;
     }
 

@@ -4,7 +4,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -23,16 +23,19 @@ import com.projectWork.repository.UserRepository;
 public class DataLoader implements CommandLineRunner
 {
 
-	@Autowired
 	private UserRepository userRepository;
-	@Autowired
 	private GymRepository gymRepository;
-	@Autowired
 	private RoomRepository roomRepository;
-	@Autowired
 	private CourseRepository courseRepository;
-	@Autowired
-	private SessionRepository sessionRepository;
+	private SessionRepository sessionRepository;    
+
+	public DataLoader(UserRepository userRepository, GymRepository gymRepository, RoomRepository roomRepository, CourseRepository courseRepository, SessionRepository sessionRepository) {
+		this.userRepository = userRepository;
+		this.gymRepository = gymRepository;
+		this.roomRepository = roomRepository;
+		this.courseRepository = courseRepository;
+		this.sessionRepository = sessionRepository;
+	}
 
 	@Override
 	public void run(String... args) throws Exception
@@ -81,7 +84,7 @@ public class DataLoader implements CommandLineRunner
 		gym2.setOpenDays(new ArrayList<>(Arrays.asList(Gym.Day.LUNEDI, Gym.Day.MERCOLEDI, Gym.Day.VENERDI)));
 		gym2.setStartTime(LocalTime.of(8, 0));
 		gym2.setEndTime(LocalTime.of(22, 0));
-		gym2 = gymRepository.save(gym);
+		gym2 = gymRepository.save(gym2);
 
 		user.setGym(gym);
 		userRepository.save(user);
@@ -149,12 +152,13 @@ public class DataLoader implements CommandLineRunner
 		courseRepository.save(course);
 		
 		coach.setCourses(new ArrayList<>(Arrays.asList(course, course2)));
+		userRepository.save(coach);
 		admin.setCourses(new ArrayList<>(Arrays.asList(course)));
+		userRepository.save(admin);
 		user2.setSessions(new ArrayList<>(Arrays.asList(session)));
+		userRepository.save(user2);
 		user.setSessions(new ArrayList<>(Arrays.asList(session, session2)));
 		userRepository.save(user);
-		userRepository.save(user2);
-		userRepository.save(coach);
-		userRepository.save(admin);
+
 	}
 }

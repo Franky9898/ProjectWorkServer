@@ -1,7 +1,6 @@
 package com.projectWork.controller;
 
 import com.projectWork.auth.TokenService;
-import com.projectWork.auth.AuthUser;
 import com.projectWork.model.User;
 import com.projectWork.model.User.Role;
 import com.projectWork.repository.UserRepository;
@@ -41,21 +40,21 @@ public class AuthController {
     public Map<String, String> login(@RequestBody Map<String, String> body, HttpServletResponse response) {
         
     	 // Estrae username e password dalla richiesta JSON
-    	String username = body.get("username");
+    	String email = body.get("email");
         String password = body.get("password");
 
         // Mappa per la risposta
         Map<String, String> result = new HashMap<>();
 
         // Verifica che username e password siano stati forniti
-        if (username == null || password == null) {
+        if (email == null || password == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             result.put("message", "Credenziali non valide");
             return result;
         }
 
         // Cerca l'utente nel database tramite username
-        Optional<User> optionalUser = userRepository.findByUsername(username);
+        Optional<User> optionalUser = userRepository.findByEmail(email);
         // Se l'utente non esiste o la password non corrisponde, ritorna errore 401
         if (!optionalUser.isPresent() || !optionalUser.get().getPassword().equals(password)) {
             // Se l'utente non esiste oppure la password non corrisponde, restituisce 401 Unauthorized
@@ -69,7 +68,7 @@ public class AuthController {
         Role role = user.getRole();
 
         // Genera un token associato all'utente
-        String token = tokenService.generateToken(username, role);
+        String token = tokenService.generateToken(email, role);
 
         // Costruisce la risposta con messaggio, ruolo e token
         result.put("message", "Login effettuato con successo");
@@ -90,7 +89,7 @@ public class AuthController {
     @PostMapping("/logout")
     public Map<String, String> logout(@RequestHeader("Authorization") String authHeader) {
         String token = null;
-// Se il token è inviato come "Bearer <token>", estrae la parte dopo "Bearer " e quindi il token
+        // Se il token è inviato come "Bearer <token>", estrae la parte dopo "Bearer " e quindi il token
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
         } else {

@@ -2,7 +2,9 @@ package com.projectWork.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import jakarta.persistence.Entity;
@@ -13,13 +15,12 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 
-@Entity
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+@Entity
 public class User {
 
     public enum Role { USER, COACH, ADMIN }
     
-    public static Integer secretCode = 9999;
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,6 +29,7 @@ public class User {
     private String lastName;
     private String email;
     private String password;
+    private Integer secretCode;
     private String token;
     private Role role;
     @ManyToMany(mappedBy = "users")
@@ -141,5 +143,14 @@ public class User {
 	{
 		this.sessions = sessions;
 	}
+	
+	public Integer getSecretCode() {
+		return secretCode;
+	}
+	
+	public void setSecretCode(Integer secretCode) {
+		this.secretCode = secretCode;
+	}
+	
 	
 }
