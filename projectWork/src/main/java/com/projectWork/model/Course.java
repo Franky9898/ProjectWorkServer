@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
@@ -35,8 +36,9 @@ public class Course
 	@OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
 	private List<Session> sessions;
 
-	@ManyToMany(mappedBy = "courses")
-	private List<Gym> gyms;
+	@ManyToOne
+    @JoinColumn(name = "gym_id") 
+    private Gym gym;
 
 	public Course()
 	{
@@ -92,14 +94,14 @@ public class Course
 		this.sessions = sessions;
 	}
 
-	public List<Gym> getGyms()
+	public Gym getGym()
 	{
-		return gyms;
+		return gym;
 	}
 
-	public void setGyms(List<Gym> gyms)
+	public void setGyms(Gym gym)
 	{
-		this.gyms = gyms;
+		this.gym = gym;
 	}
 
 }

@@ -35,9 +35,8 @@ public class Gym
 	private LocalTime startTime;
 	private LocalTime endTime;
 
-	@ManyToMany
-	@JoinTable(name = "gym_course", joinColumns = @JoinColumn(name = "gym_id"), inverseJoinColumns = @JoinColumn(name = "course_id"))
-	private List<Course> courses;
+	@OneToMany(mappedBy = "gym", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Course> courses;
 
 	@OneToMany(mappedBy = "gym", cascade = CascadeType.ALL)
 	private List<Room> rooms;
