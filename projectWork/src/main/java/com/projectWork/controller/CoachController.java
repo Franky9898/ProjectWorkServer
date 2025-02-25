@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -55,9 +56,8 @@ public class CoachController {
 	List <Session> sessions = new ArrayList<>();
 	
 	@GetMapping("/showCourses")
-	public Optional <Course> showCourseById(@PathVariable Long id){	
-		Optional <Course> course = courseRepository.findById(id);
-		return course;
+	public List <Course> showAllCourses(){	
+		return courseRepository.findAll();
 	}
 	
 	@PostMapping("/addCourse/{userId}")
@@ -81,16 +81,16 @@ public class CoachController {
 	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(user);
 	}
 	
-	@PutMapping("/addCoachToCourse/{userId}/{coachId}")
-	public ResponseEntity<Object> addCoachToCourse(@PathVariable Long userId, @PathVariable Long coachId, @RequestBody Course course) {
-		Optional <User> userOpt = userRepository.findById(userId);
+	@PutMapping("/addCoachToCourse/{coachId}/{courseId}")
+	public ResponseEntity<Object> addCoachToCourse(@PathVariable Long coachId, @PathVariable Long courseId){
 		Optional <User> coachOpt = userRepository.findById(coachId);
-		if(!userOpt.isPresent() || !coachOpt.isPresent()) {
+		Optional <Course> courseOpt = courseRepository.findById(courseId);
+		if(!coachOpt.isPresent()) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
 		}
-		User user = userOpt.get();
 		User coach = coachOpt.get();
-		if(user.getRole() == Role.COACH && user.getSecretCode() == 9999 && coach.getRole() == Role.COACH && coach.getSecretCode() == 9999) {
+		Course course = courseOpt.get();
+		if(coach.getRole() == Role.COACH && coach.getSecretCode() == 9999) {
 			users.add(coach);
 			courses.add(course);
 			
@@ -98,10 +98,10 @@ public class CoachController {
 			course.setUsers(users);
 			
 			courseRepository.save(course);
-			userRepository.save(user);
+			userRepository.save(coach);
 			return ResponseEntity.status(HttpStatus.CREATED).body(course);
 		}
-	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(user);
+	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(coach);
 	}
 	
 }
