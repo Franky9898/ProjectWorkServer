@@ -3,7 +3,9 @@ package com.projectWork.model;
 import java.time.LocalTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import jakarta.persistence.CascadeType;
@@ -16,8 +18,8 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 
-@Entity
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+@Entity
 public class Gym {
 
     public enum Day { LUNEDI, MARTEDI, MERCOLEDI, GIOVEDI, VENERDI, SABATO }
@@ -26,7 +28,7 @@ public class Gym {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @OneToMany(mappedBy = "gym", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "gym")
     private List<User> users;
     
     private List<Day> openDays;
@@ -39,7 +41,7 @@ public class Gym {
                inverseJoinColumns = @JoinColumn(name = "course_id"))
     private List<Course> courses;
     
-    @OneToMany(mappedBy = "gym")
+    @OneToMany(mappedBy = "gym", cascade = CascadeType.ALL)
     private List<Room> rooms;
 	
 	public Gym() {}
