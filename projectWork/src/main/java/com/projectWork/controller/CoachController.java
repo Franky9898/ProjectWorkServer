@@ -1,7 +1,7 @@
 package com.projectWork.controller;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,112 +16,169 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.projectWork.repository.CourseRepository;
-import com.projectWork.repository.GymRepository;
-import com.projectWork.repository.SessionRepository;
-//import com.projectWork.auth.TokenService;
 import com.projectWork.repository.UserRepository;
-import com.projectWork.exception.ResourceNotFoundException;
 import com.projectWork.model.Course;
-import com.projectWork.model.Gym;
-import com.projectWork.model.Session;
-//import com.projectWork.auth.AuthUser;
 import com.projectWork.model.User;
 import com.projectWork.model.User.Role;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/courses")
 @CrossOrigin(origins = {}) // Disabilita richieste CORS da origini esterne
-public class CoachController {
+public class CoachController
+{
 
 	@Autowired
-    private UserRepository userRepository;
-	List <User> users = new ArrayList<>();;
-	
+	private UserRepository userRepository;
+
 	@Autowired
-    private GymRepository gymRepository;
-	
-	@Autowired
-    private CourseRepository courseRepository;
-	List <Course> courses = new ArrayList<>();
-	
-	@Autowired
-    private SessionRepository sessionRepository;
-	List <Session> sessions = new ArrayList<>();
-	
+	private CourseRepository courseRepository;
+
 	@GetMapping("/showCourses")
-	public List <Course> showAllCourses(){	
+	public List <Course> showAllCourses()
+	{	
 		return courseRepository.findAll();
 	}
 	
-	@PostMapping("/addCourse/{userId}")
-	public ResponseEntity<Object> addCourse(@PathVariable Long userId, @RequestBody Course course) {
-		Optional <User> userOpt = userRepository.findById(userId);
-		if(!userOpt.isPresent()) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+	@GetMapping("/showCoursesById")
+	public Optional<Course> showCourseById(@PathVariable Long id)
+	{
+		Optional<Course> course = courseRepository.findById(id);
+		return course;
+	}
+
+	@PostMapping("/addCourse")
+	public ResponseEntity<String> addCourse(@RequestHeader("Authorization") String authorizationHeader, @RequestBody Course course)
+	{
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+		{
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Errore: Header Authorization mancante o formato errato.");
+		}
+
+		String token = authorizationHeader.substring(7);
+		Optional<User> userOpt = userRepository.findByToken(token);
+		if (!userOpt.isPresent())
+		{
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utente non trovato.");
 		}
 		User user = userOpt.get();
-		if(user.getRole() == Role.COACH && user.getSecretCode() == 9999) {
-			users.add(user);
-			courses.add(course);
-			
-			user.setCourses(courses);
-			course.setUsers(users);
-			
-			Course newCourse = courseRepository.save(course);
-			userRepository.save(user);
-			return ResponseEntity.status(HttpStatus.CREATED).body(newCourse);
+		if (!(user.getRole() == Role.COACH && user.getSecretCode() == 9999))
+		{
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Utente non autorizzato.");
 		}
-	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(user);
+		List<User> courseUsers = course.getUsers();
+		if (courseUsers == null)
+		{
+			courseUsers = new ArrayList<>();
+		}
+		if (!courseUsers.contains(user))
+		{
+			courseUsers.add(user);
+		}
+		course.setUsers(courseUsers);
+		List<Course> userCourses = user.getCourses();
+		if (userCourses == null)
+		{
+			userCourses = new ArrayList<>();
+		}
+		if (!userCourses.contains(course))
+		{
+			userCourses.add(course);
+		}
+		user.setCourses(userCourses);
+		courseRepository.save(course);
+		userRepository.save(user);
+		return ResponseEntity.ok("Corso aggiunto con successo.");
 	}
-	
-	@PutMapping("/addCoachToCourse/{coachId}/{courseId}")
-	public ResponseEntity<Object> addCoachToCourse(@PathVariable Long coachId, @PathVariable Long courseId){
-		Optional <User> coachOpt = userRepository.findById(coachId);
-		Optional <Course> courseOpt = courseRepository.findById(courseId);
-		if(!coachOpt.isPresent()) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+
+	@PutMapping("/addCoachToCourse")
+	public ResponseEntity<String> addCoachToCourse(@RequestHeader("Authorization") String authorizationHeader, @RequestBody Map<String, String> body)
+	{
+		String result;
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+		{
+			result = "Errore: Header Authorization mancante o formato errato.";
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
 		}
-		User coach = coachOpt.get();
+		String token = authorizationHeader.substring(7);
+		Optional<User> userOpt = userRepository.findByToken(token);
+		if (!userOpt.isPresent())
+		{
+			result = "User not found";
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
+		}
+
+		String newCoachEmail = body.get("email");
+		Optional<User> newCoachOpt = userRepository.findByEmail(newCoachEmail);
+		if (!newCoachOpt.isPresent())
+		{
+			result = "Errore: Nessun Utente con questa email.";
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
+		}
+		User newCoach = newCoachOpt.get();
+		if (newCoach.getRole() != Role.COACH || newCoach.getSecretCode() != 9999)
+		{
+			result = "Errore: Nessun Coach con questa email.";
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
+		}
+		User user = userOpt.get();
+		if (user.getRole() != Role.COACH || user.getSecretCode() != 9999)
+		{
+			result = "Errore: Non dovresti essere qui.";
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
+		}
+		String courseTitle = body.get("title");
+		Optional<Course> courseOpt = courseRepository.findByTitle(courseTitle);
+		if (!courseOpt.isPresent())
+		{
+			result = "Errore: Nessun Corso con questo titolo.";
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
+		}
 		Course course = courseOpt.get();
-		if(coach.getRole() == Role.COACH && coach.getSecretCode() == 9999) {
-			users.add(coach);
-			courses.add(course);
-			
-			coach.setCourses(courses);
-			course.setUsers(users);
-			
-			courseRepository.save(course);
-			userRepository.save(coach);
-			return ResponseEntity.status(HttpStatus.CREATED).body(course);
+		List<User> courseUsers = course.getUsers();
+		if (courseUsers == null)
+		{
+			courseUsers = new ArrayList<>();
 		}
-	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(coach);
+		if (!courseUsers.contains(user))
+		{
+			courseUsers.add(user);
+		}
+		if (!courseUsers.contains(newCoach))
+		{
+			courseUsers.add(newCoach);
+		}
+		course.setUsers(courseUsers);
+		courseRepository.save(course);
+
+		List<Course> userCourses = user.getCourses();
+		if (userCourses == null)
+		{
+			userCourses = new ArrayList<>();
+		}
+		if (!userCourses.contains(course))
+		{
+			userCourses.add(course);
+		}
+		user.setCourses(userCourses);
+
+		List<Course> coachCourses = newCoach.getCourses();
+		if (coachCourses == null)
+		{
+			coachCourses = new ArrayList<>();
+		}
+		if (!coachCourses.contains(course))
+		{
+			coachCourses.add(course);
+		}
+		newCoach.setCourses(coachCourses);
+		userRepository.saveAll(Arrays.asList(user, newCoach));
+		result = "Coach aggiunto con successo al corso selezionato";
+		return ResponseEntity.ok(result);
 	}
-	
+
 }
-
-/* 
- * {
-  "firstName": "Lorenzo",
-  "lastName": "Frascella",
-  "email": "lore12345@gmail.com",
-  "password": "lollo",
-  "role": 1,
-  "secretCode": 9999
-}
-
-http://localhost:8080/courses/addCoachToCourse/5/6
-
-{
-  "id": 3,
-  "title": "boh",
-  "description": "bohbohboh"
-}
-
- * */

@@ -4,6 +4,8 @@ import java.time.LocalTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.projectWork.model.Room;
@@ -23,21 +25,28 @@ public class SessionService
 		return conflicts.isEmpty();
 	}
 
-	public Session createSession(Session session)
+	//Potrebbero servire Optional su room e gym
+	public ResponseEntity<String> createSession(Session session)
 	{
+		String result;
 		if (!isRoomAvailable(session.getRoom(), session.getStartingTime(), session.getEndingTime()))
 		{
-			throw new IllegalArgumentException("La stanza è già occupata.");
+			result = "La stanza è già occupata.";
+			return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(result);
 		}
 		if (session.getMaxParticipants() > session.getRoom().getCapacity())
 		{
-			throw new IllegalArgumentException("La stanza non può ospitare tale numero di partecipanti.");
+			result = "La stanza non può ospitare tale numero di partecipanti.";
+					return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(result);
 		}
 		//inizio palestra > inizio sessione, fine palestra < fine sessione
 		if(session.getRoom().getGym().getStartTime().isAfter(session.getStartingTime()) || session.getRoom().getGym().getEndTime().isBefore(session.getEndingTime()))
 		{
-			throw new IllegalArgumentException("La sessione non è compatibile con gli orari di lavoro della palestra.");
+			result = "La sessione non è compatibile con gli orari di lavoro della palestra.";
+			return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(result);
 		}
-		return sessionRepository.save(session);
+		sessionRepository.save(session);
+		result = "Sessione creata con successo.";
+		return ResponseEntity.ok(result);
 	}
 }

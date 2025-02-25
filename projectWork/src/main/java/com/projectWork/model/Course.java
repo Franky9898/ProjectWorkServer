@@ -3,7 +3,6 @@ package com.projectWork.model;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -18,6 +17,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 
 
@@ -41,8 +41,9 @@ public class Course
 	@OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
 	private List<Session> sessions;
 
-	@ManyToMany(mappedBy = "courses")
-	private List<Gym> gyms;
+	@ManyToOne
+    @JoinColumn(name = "gym_id") 
+    private Gym gym;
 
 	public Course()
 	{
@@ -98,14 +99,14 @@ public class Course
 		this.sessions = sessions;
 	}
 
-	public List<Gym> getGyms()
+	public Gym getGym()
 	{
-		return gyms;
+		return gym;
 	}
 
-	public void setGyms(List<Gym> gyms)
+	public void setGyms(Gym gym)
 	{
-		this.gyms = gyms;
+		this.gym = gym;
 	}
 
 }
