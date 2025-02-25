@@ -21,7 +21,6 @@ public class User {
 
     public enum Role { USER, COACH, ADMIN }
     
-    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
