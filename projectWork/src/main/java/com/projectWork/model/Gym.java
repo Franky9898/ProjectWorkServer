@@ -39,7 +39,7 @@ public class Gym {
                inverseJoinColumns = @JoinColumn(name = "course_id"))
     private List<Course> courses;
     
-    @OneToMany(mappedBy = "gym", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "gym")
     private List<Room> rooms;
 	
 	public Gym() {}

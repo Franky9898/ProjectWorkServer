@@ -24,7 +24,7 @@ public class Room {
     
     private Integer capacity;
     
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "room")
     private List<Session> sessions;
     
     // Many Rooms can belong to one Gym.

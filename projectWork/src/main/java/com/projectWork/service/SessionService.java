@@ -1,4 +1,4 @@
-package com.projectWork.session;
+package com.projectWork.service;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -33,7 +33,7 @@ public class SessionService
 		{
 			throw new IllegalArgumentException("La stanza non può ospitare tale numero di partecipanti.");
 		}
-		//inizio palestra < inizio sessione, fine palestra > fine sessione
+		//inizio palestra > inizio sessione, fine palestra < fine sessione
 		if(session.getRoom().getGym().getStartTime().isAfter(session.getStartingTime()) || session.getRoom().getGym().getEndTime().isBefore(session.getEndingTime()))
 		{
 			throw new IllegalArgumentException("La sessione non è compatibile con gli orari di lavoro della palestra.");

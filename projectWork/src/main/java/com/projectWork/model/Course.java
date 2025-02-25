@@ -32,7 +32,7 @@ public class Course
 	@JoinTable(name = "user_course", joinColumns = @JoinColumn(name = "course_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
 	private List<User> users;
 
-	@OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "course")
 	private List<Session> sessions;
 
 	@ManyToMany(mappedBy = "courses")

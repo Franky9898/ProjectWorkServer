@@ -22,17 +22,20 @@ import com.projectWork.repository.UserRepository;
 @Component
 public class DataLoader implements CommandLineRunner
 {
-
-	@Autowired
 	private UserRepository userRepository;
-	@Autowired
 	private GymRepository gymRepository;
-	@Autowired
 	private RoomRepository roomRepository;
-	@Autowired
 	private CourseRepository courseRepository;
-	@Autowired
 	private SessionRepository sessionRepository;
+
+	DataLoader(UserRepository userRepository, GymRepository gymRepository, RoomRepository roomRepository, CourseRepository courseRepository, SessionRepository sessionRepository)
+	{
+		this.userRepository = userRepository;
+		this.gymRepository = gymRepository;
+		this.roomRepository = roomRepository;
+		this.courseRepository = courseRepository;
+		this.sessionRepository = sessionRepository;
+	}
 
 	@Override
 	public void run(String... args) throws Exception
@@ -96,12 +99,12 @@ public class DataLoader implements CommandLineRunner
 		room.setCapacity(20);
 		room.setGym(gym);
 		room = roomRepository.save(room);
-		
+
 		Room room2 = new Room();
 		room2.setCapacity(20);
 		room2.setGym(gym);
 		room2 = roomRepository.save(room2);
-		
+
 		Room room3 = new Room();
 		room3.setCapacity(20);
 		room3.setGym(gym2);
@@ -112,7 +115,7 @@ public class DataLoader implements CommandLineRunner
 		course.setDescription("Si usano le scarpe.");
 		course.setUsers(new ArrayList<>(Arrays.asList(coach, admin)));
 		course = courseRepository.save(course);
-		
+
 		Course course2 = new Course();
 		course2.setTitle("HIIT");
 		course2.setDescription("Daje.");
@@ -126,7 +129,7 @@ public class DataLoader implements CommandLineRunner
 
 		course.setGyms(new ArrayList<>(Arrays.asList(gym)));
 		course = courseRepository.save(course);
-		course2.setGyms(new ArrayList<>(Arrays.asList(gym,gym2)));
+		course2.setGyms(new ArrayList<>(Arrays.asList(gym, gym2)));
 		course2 = courseRepository.save(course2);
 
 		Session session = new Session();
@@ -136,18 +139,18 @@ public class DataLoader implements CommandLineRunner
 		session.setCourse(course);
 		session.setUsers(new ArrayList<>(Arrays.asList(user)));
 		session = sessionRepository.save(session);
-		
+
 		Session session2 = new Session();
 		session2.setStartingTime(LocalTime.of(19, 0));
 		session2.setEndingTime(LocalTime.of(20, 0));
 		session2.setMaxParticipants(13);
 		session2.setCourse(course);
-		session2.setUsers(new ArrayList<>(Arrays.asList(user,user2)));
+		session2.setUsers(new ArrayList<>(Arrays.asList(user, user2)));
 		session2 = sessionRepository.save(session2);
 
 		course.setSessions(new ArrayList<>(Arrays.asList(session, session2)));
 		courseRepository.save(course);
-		
+
 		coach.setCourses(new ArrayList<>(Arrays.asList(course, course2)));
 		admin.setCourses(new ArrayList<>(Arrays.asList(course)));
 		user2.setSessions(new ArrayList<>(Arrays.asList(session)));
