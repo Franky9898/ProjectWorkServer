@@ -10,4 +10,5 @@ import com.projectWork.model.User;
 public interface UserRepository extends JpaRepository<User, Long>
 {	
 	Optional<User> findByEmail(String username);
+	Optional<User> findByToken(String token);
 }

@@ -31,68 +31,60 @@ import jakarta.servlet.http.HttpServletResponse;
 @RestController
 @RequestMapping("/users")
 @CrossOrigin(origins = {}) // Disabilita richieste CORS da origini esterne
-public class UserController {
+public class UserController
+{
 
 	@Autowired
-    private UserRepository userRepository;
-	
-	@Autowired
-    private GymRepository gymRepository;
+	private UserRepository userRepository;
 
-    /*@Autowired
-    private TokenService tokenService;*/
-    
-    	@GetMapping("/showUsers/{id}")
-    	public Optional <User> showUserById(@PathVariable Long id){	
-    		Optional <User> user = userRepository.findById(id);
-    		return user;
-    	}
-    	
-    
-		@PostMapping("/addUser")
-		public ResponseEntity<Object> addUser(@RequestBody User user) {
-			Map<String, String> result = new HashMap<String, String>();
-			if(userRepository.findByEmail(user.getEmail()).isPresent()) {
-				result.put("errore", "L'email è già presente nel database.");
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
-			}
-			if(user.getSecretCode() == 9999) {
-				user.setRole(Role.COACH);
-			} else {
-				user.setRole(Role.USER);
-			}
-		    User newUser = userRepository.save(user);
-		    return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
+	@Autowired
+	private GymRepository gymRepository;
+
+	/*
+	 * @Autowired private TokenService tokenService;
+	 */
+
+	@GetMapping("/showUsers/{id}")
+	public Optional<User> showUserById(@PathVariable Long id)
+	{
+		Optional<User> user = userRepository.findById(id);
+		return user;
+	}
+
+	@PostMapping("/addUser")
+	public ResponseEntity<Object> addUser(@RequestBody User user)
+	{
+		Map<String, String> result = new HashMap<String, String>();
+		if (userRepository.findByEmail(user.getEmail()).isPresent())
+		{
+			result.put("errore", "L'email è già presente nel database.");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
 		}
-		
-		@PostMapping("/addUserGym/{userId}/{gymId}")
-		public ResponseEntity<Object> addUserGym(@PathVariable Long userId, @PathVariable Long gymId ){
-			User user = userRepository.findById(userId)
-					.orElseThrow(() -> new ResourceNotFoundException("User not Found"));
-			
-			Gym gym = gymRepository.findById(gymId)
-					.orElseThrow(() -> new ResourceNotFoundException("Gym not Found"));
-			user.setGym(gym);
-			userRepository.save(user);
-			return ResponseEntity.status(HttpStatus.CREATED).body(user);
+		if (user.getSecretCode() == 9999)
+		{
+			user.setRole(Role.COACH);
+		} else
+		{
+			user.setRole(Role.USER);
 		}
-		
-		
-		/*private AuthUser getAuthenticatedUser(HttpServletRequest request) {
-		    // Legge l'header "Authorization"
-		    String authHeader = request.getHeader("Authorization");
-		    if (authHeader != null && !authHeader.isEmpty()) {
-		        String token;
-		        // Se il token è inviato come "Bearer <token>", lo estrae
-		        if (authHeader.startsWith("Bearer ")) {
-		            token = authHeader.substring(7);
-		        } else {
-		            token = authHeader;
-		        }
-		        // Usa il TokenService per ottenere l'utente associato al token
-		        return tokenService.getAuthUser(token);
-		    }
-		    // Se non c'è header "Authorization", restituisce null
-		    return null;
-		}*/
+		User newUser = userRepository.save(user);
+		return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
+	}
+
+	@PostMapping("/addUserGym/{userId}/{gymId}")
+	public ResponseEntity<Object> addUserGym(@PathVariable Long userId, @PathVariable Long gymId)
+	{
+		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not Found"));
+
+		Gym gym = gymRepository.findById(gymId).orElseThrow(() -> new ResourceNotFoundException("Gym not Found"));
+		user.setGym(gym);
+		userRepository.save(user);
+		return ResponseEntity.status(HttpStatus.CREATED).body(user);
+	}
+
+	/*
+	 * private AuthUser getAuthenticatedUser(HttpServletRequest request) { // Legge l'header "Authorization" String authHeader = request.getHeader("Authorization"); if (authHeader != null &&
+	 * !authHeader.isEmpty()) { String token; // Se il token è inviato come "Bearer <token>", lo estrae if (authHeader.startsWith("Bearer ")) { token = authHeader.substring(7); } else { token = authHeader;
+	 * } // Usa il TokenService per ottenere l'utente associato al token return tokenService.getAuthUser(token); } // Se non c'è header "Authorization", restituisce null return null; }
+	 */
 }

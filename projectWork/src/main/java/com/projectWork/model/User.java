@@ -2,11 +2,12 @@ package com.projectWork.model;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import org.hibernate.validator.constraints.Length;
+
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,6 +15,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @Entity
@@ -24,10 +27,20 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @NotBlank(message = "Nome obbligatorio.")
     private String firstName;
+    
+    @NotBlank(message = "Cognome obbligatorio.")
     private String lastName;
+    
+    @Email(message = "L'email deve essere valida.")
+    @Column(unique=true)
     private String email;
+    
+    @Length(min=8, message="La password deve essere composta da almeno otto (8) caratteri.")
+    @NotBlank(message = "Password obbligatoria")
     private String password;
+    
     private Integer secretCode;
     private String token;
     private Role role;
