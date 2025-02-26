@@ -52,6 +52,7 @@ public class User {
     private List<Course> courses;
     
     @ManyToMany(mappedBy = "users")
+    @JsonIgnore
     private List<Session> sessions;
     
     @ManyToOne
