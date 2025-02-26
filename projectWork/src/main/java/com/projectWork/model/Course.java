@@ -25,7 +25,6 @@ import jakarta.persistence.OneToMany;
 @Entity
 public class Course
 {
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
