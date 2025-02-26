@@ -26,7 +26,6 @@ public class Room {
     @OneToMany(mappedBy = "room")
     private List<Session> sessions;
     
-    // Many Rooms can belong to one Gym.
     @ManyToOne
     @JoinColumn(name = "gym_id")
     private Gym gym;

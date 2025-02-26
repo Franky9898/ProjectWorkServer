@@ -24,6 +24,10 @@ public class Session {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @ManyToOne
+    @JoinColumn(name = "weekday_id")
+    private WeekDay sessionDay;
+    
     private LocalTime startingTime;
     private LocalTime endingTime;
     private Integer maxParticipants;
@@ -32,12 +36,10 @@ public class Session {
     @JoinColumn(name = "room_id")
     private Room room;
     
-    // Many Sessions belong to one Course.
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
     
-    // Bidirectional ManyToMany with User.
     @ManyToMany
     @JoinTable(name = "session_user",
                joinColumns = @JoinColumn(name = "session_id"),
@@ -121,7 +123,15 @@ public class Session {
 	{
 		this.room = room;
 	}
-	
-	
+
+	public WeekDay getSessionDay()
+	{
+		return sessionDay;
+	}
+
+	public void setSessionDay(WeekDay sessionDay)
+	{
+		this.sessionDay = sessionDay;
+	}
 	
 }

@@ -101,7 +101,7 @@ public class Course
 		return gym;
 	}
 
-	public void setGyms(Gym gym)
+	public void setGym(Gym gym)
 	{
 		this.gym = gym;
 	}

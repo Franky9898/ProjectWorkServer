@@ -148,9 +148,9 @@ public class DataLoader implements CommandLineRunner
 			gym2.setCourses(new ArrayList<>(Arrays.asList(course2)));
 			gymRepository.save(gym2);
 
-			course.setGyms(gym);
+			course.setGym(gym);
 			course = courseRepository.save(course);
-			course2.setGyms(gym);
+			course2.setGym(gym);
 			course2 = courseRepository.save(course2);
 
 			Session session = new Session();

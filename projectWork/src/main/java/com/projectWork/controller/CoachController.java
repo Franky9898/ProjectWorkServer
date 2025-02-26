@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,11 +38,30 @@ public class CoachController
 	@Autowired
 	private CourseRepository courseRepository;
 
-	@GetMapping("/showCourses")
-	public Optional<Course> showCourseById(@PathVariable Long id)
+	@GetMapping("/coachCourses")
+	public ResponseEntity<Object> showCourse(@RequestHeader("Authorization") String authorizationHeader)
 	{
-		Optional<Course> course = courseRepository.findById(id);
-		return course;
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+		{
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Errore: Header Authorization mancante o formato errato.");
+		}
+
+		String token = authorizationHeader.substring(7);
+		Optional<User> userOpt = userRepository.findByToken(token);
+		if (!userOpt.isPresent())
+		{
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utente non trovato.");
+		}
+		User user = userOpt.get();
+		if (!(user.getRole() == Role.COACH && user.getSecretCode() == 9999))
+		{
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Utente non autorizzato.");
+		}
+		List<Course> courses = user.getCourses();
+		if(courses.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Coach senza corsi.");
+		}
+		return ResponseEntity.ok(courses);
 	}
 
 	@PostMapping("/addCourse")
@@ -83,6 +103,8 @@ public class CoachController
 			userCourses.add(course);
 		}
 		user.setCourses(userCourses);
+		course.setGym(user.getGym());
+		course.setTitle("Palestra " + course.getGym().getId() +": " + course.getTitle());
 		courseRepository.save(course);
 		userRepository.save(user);
 		return ResponseEntity.ok("Corso aggiunto con successo.");
@@ -123,6 +145,11 @@ public class CoachController
 		{
 			result = "Errore: Non dovresti essere qui.";
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
+		}
+		if(!user.getGym().equals(newCoach.getGym()))
+		{
+			result = "Errore: Non puoi inserire un coach che non faccia parte della tua palestra.";
+			return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(result);
 		}
 		String courseTitle = body.get("title");
 		Optional<Course> courseOpt = courseRepository.findByTitle(courseTitle);

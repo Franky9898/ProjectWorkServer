@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -59,7 +60,27 @@ public class UserController
 	/*
 	 * @Autowired private TokenService tokenService;
 	 */
+	
+	@GetMapping("/userDetails")
+	public ResponseEntity<Object> userDetails(@RequestHeader("Authorization") String authorizationHeader) 
+	{
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+		{
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Errore: Header Authorization mancante o formato errato.");
+		}
 
+		String token = authorizationHeader.substring(7);
+		Optional<User> userOpt = userRepository.findByToken(token);
+		if (!userOpt.isPresent())
+		{
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utente non trovato.");
+		}
+		User user = userOpt.get();
+		return ResponseEntity.ok(user);
+	}
+	
+	
+	
 	@GetMapping("/showUsers/{id}")
 	public Optional<User> showUserById(@PathVariable Long id)
 	{
