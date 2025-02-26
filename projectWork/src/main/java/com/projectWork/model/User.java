@@ -21,45 +21,50 @@ import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-
 @Entity
-public class User {
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+public class User
+{
 
-    public enum Role { USER, COACH, ADMIN }
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @NotBlank(message = "Nome obbligatorio.")
-    private String firstName;
-    
-    @NotBlank(message = "Cognome obbligatorio.")
-    private String lastName;
-    
-    @Email(message = "L'email deve essere valida.")
-    @Column(unique=true)
-    private String email;
-    
-    @Length(min=8, message="La password deve essere composta da almeno otto (8) caratteri.")
-    @NotBlank(message = "Password obbligatoria")
-    private String password;
-    
-    private Integer secretCode;
-    private String token;
-    private Role role;
-    @ManyToMany(mappedBy = "users")
-    @JsonBackReference
-    private List<Course> courses;
-    
-    @ManyToMany(mappedBy = "users")
-    @JsonIgnore
-    private List<Session> sessions;
-    
-    @ManyToOne
-    @JoinColumn(name = "gym_id")
-    private Gym gym;
+	public enum Role
+	{
+		USER, COACH, ADMIN
+	}
 
-	public User() {}
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+	@NotBlank(message = "Nome obbligatorio.")
+	private String firstName;
+
+	@NotBlank(message = "Cognome obbligatorio.")
+	private String lastName;
+
+	@Email(message = "L'email deve essere valida.")
+	@Column(unique = true)
+	private String email;
+
+	@Length(min = 8, message = "La password deve essere composta da almeno otto (8) caratteri.")
+	@NotBlank(message = "Password obbligatoria")
+	private String password;
+
+	private Integer secretCode;
+	private String token;
+	private Role role;
+	@ManyToMany(mappedBy = "users")
+	private List<Course> courses;
+
+	@ManyToMany(mappedBy = "users")
+	@JsonIgnore
+	private List<Session> sessions;
+
+	@ManyToOne
+	@JoinColumn(name = "gym_id")
+	private Gym gym;
+
+	public User()
+	{
+	}
 
 	public Long getId()
 	{
@@ -160,14 +165,15 @@ public class User {
 	{
 		this.sessions = sessions;
 	}
-	
-	public Integer getSecretCode() {
+
+	public Integer getSecretCode()
+	{
 		return secretCode;
 	}
-	
-	public void setSecretCode(Integer secretCode) {
+
+	public void setSecretCode(Integer secretCode)
+	{
 		this.secretCode = secretCode;
 	}
-	
-	
+
 }

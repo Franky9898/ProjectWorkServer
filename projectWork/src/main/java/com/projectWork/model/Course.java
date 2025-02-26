@@ -23,6 +23,7 @@ import jakarta.persistence.OneToMany;
 
 
 @Entity
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Course
 {
 	@Id
@@ -35,7 +36,6 @@ public class Course
 
 	@ManyToMany
 	@JoinTable(name = "user_course", joinColumns = @JoinColumn(name = "course_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
-	@JsonManagedReference
 	private List<User> users;
 
 	@OneToMany(mappedBy = "course", cascade = CascadeType.ALL)

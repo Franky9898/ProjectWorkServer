@@ -2,6 +2,7 @@ package com.projectWork.controller;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,13 +38,13 @@ public class CoachController
 
 	@Autowired
 	private CourseRepository courseRepository;
-	
+
 	@GetMapping("/showCourses")
-	public List <Course> showAllCourses()
-	{	
+	public List<Course> showAllCourses()
+	{
 		return courseRepository.findAll();
 	}
-	
+
 	@GetMapping("/coachCourses")
 	public ResponseEntity<Object> showCourse(@RequestHeader("Authorization") String authorizationHeader)
 	{
@@ -63,16 +64,21 @@ public class CoachController
 		{
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Utente non autorizzato.");
 		}
-		List<Course> courses = user.getCourses();
-		if(courses.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Coach senza corsi.");
-		}
-		return ResponseEntity.ok(courses);
+		List<Map<String, Object>> courseList = user.getCourses().stream().map(course ->
+		{
+			Map<String, Object> courseMap = new HashMap<>();
+			courseMap.put("id", course.getId());
+			courseMap.put("title", course.getTitle());
+			return courseMap;
+		}).collect(Collectors.toList());
+
+		return ResponseEntity.ok(courseList);
 	}
 
 	@PostMapping("/addCourse")
 	public ResponseEntity<String> addCourse(@RequestHeader("Authorization") String authorizationHeader, @RequestBody Course course)
 	{
+		System.out.println(course);
 		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
 		{
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Errore: Header Authorization mancante o formato errato.");
@@ -110,7 +116,7 @@ public class CoachController
 		}
 		user.setCourses(userCourses);
 		course.setGym(user.getGym());
-		course.setTitle("Palestra " + course.getGym().getId() +": " + course.getTitle());
+		course.setTitle("Palestra " + course.getGym().getId() + ": " + course.getTitle());
 		courseRepository.save(course);
 		userRepository.save(user);
 		return ResponseEntity.ok("Corso aggiunto con successo.");
@@ -151,7 +157,7 @@ public class CoachController
 			result = "Errore: Non dovresti essere qui.";
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
 		}
-		if(!user.getGym().equals(newCoach.getGym()))
+		if (!user.getGym().equals(newCoach.getGym()))
 		{
 			result = "Errore: Non puoi inserire un coach che non faccia parte della tua palestra.";
 			return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(result);
@@ -176,6 +182,10 @@ public class CoachController
 		if (!courseUsers.contains(newCoach))
 		{
 			courseUsers.add(newCoach);
+		} else
+		{
+			result = "Errore: Il coach già insegna questo corso.";
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
 		}
 		course.setUsers(courseUsers);
 		courseRepository.save(course);
@@ -205,9 +215,9 @@ public class CoachController
 		result = "Coach aggiunto con successo al corso selezionato";
 		return ResponseEntity.ok(result);
 	}
-	
+
 	@GetMapping("/coachInSameGym")
-	public ResponseEntity<Object> getCoachInSameGym(@RequestHeader("Authorization") String authorizationHeader) 
+	public ResponseEntity<Object> getCoachInSameGym(@RequestHeader("Authorization") String authorizationHeader)
 	{
 		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
 		{
@@ -227,8 +237,14 @@ public class CoachController
 		}
 		Gym gym = user.getGym();
 		List<User> users = gym.getUsers();
-		List<User> coaches = users.stream().filter(userz -> userz.getRole() == User.Role.COACH).collect(Collectors.toList());
-		return ResponseEntity.ok(coaches);
+		List<Map<String, Object>> coachList = users.stream().filter(userz -> userz.getRole() == User.Role.COACH && userz.getSecretCode() == 9999 && !userz.getId().equals(user.getId())).map(coach ->
+		{
+			Map<String, Object> coachMap = new HashMap<>();
+			coachMap.put("id", coach.getId());
+			coachMap.put("email", coach.getEmail());
+			return coachMap;
+		}).collect(Collectors.toList());
+		return ResponseEntity.ok(coachList);
 	}
 
 }
