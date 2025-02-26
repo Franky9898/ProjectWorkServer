@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.projectWork.model.Course;
 import com.projectWork.model.Gym;
+import com.projectWork.model.Session;
 import com.projectWork.model.User;
 import com.projectWork.model.User.Role;
 import com.projectWork.repository.CourseRepository;
@@ -245,6 +246,47 @@ public class CoachController
 			return coachMap;
 		}).collect(Collectors.toList());
 		return ResponseEntity.ok(coachList);
+	}
+
+	@GetMapping("/coachSessions")
+	public ResponseEntity<Object> getCoachSession(@RequestHeader("Authorization") String authorizationHeader)
+	{
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+		{
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Errore: Header Authorization mancante o formato errato.");
+		}
+
+		String token = authorizationHeader.substring(7);
+		Optional<User> userOpt = userRepository.findByToken(token);
+		if (!userOpt.isPresent())
+		{
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utente non trovato.");
+		}
+		User coach = userOpt.get();
+		if (!(coach.getRole() == Role.COACH && coach.getSecretCode() == 9999))
+		{
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Utente non autorizzato.");
+		}
+		
+		List<Course> courseList = coach.getCourses();
+		List<Map<String, Object>> sessionList = new ArrayList<>();
+		for (Course course : courseList)
+		{
+			List<Map<String, Object>> sessions = course.getSessions().stream().map(session ->
+			{
+				Map<String, Object> sessionMap = new HashMap<>();
+				sessionMap.put("title", session.getCourse().getTitle());
+				sessionMap.put("id", session.getId());
+				sessionMap.put("room", session.getRoom());
+				sessionMap.put("startingTime", session.getStartingTime());
+				sessionMap.put("endingTime", session.getEndingTime());
+				sessionMap.put("sessionDay", session.getSessionDay());
+				sessionMap.put("participants", session.getUsers().size());
+				return sessionMap;
+			}).collect(Collectors.toList());
+			sessionList.addAll(sessions);
+		}
+		return ResponseEntity.ok(sessionList);
 	}
 
 }
