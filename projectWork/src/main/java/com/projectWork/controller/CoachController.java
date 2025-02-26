@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,6 +38,12 @@ public class CoachController
 
 	@Autowired
 	private CourseRepository courseRepository;
+	
+	@GetMapping("/showCourses")
+	public List <Course> showAllCourses()
+	{	
+		return courseRepository.findAll();
+	}
 
 	@GetMapping("/coachCourses")
 	public ResponseEntity<Object> showCourse(@RequestHeader("Authorization") String authorizationHeader)

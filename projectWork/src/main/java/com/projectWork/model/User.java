@@ -4,7 +4,10 @@ import java.util.List;
 
 import org.hibernate.validator.constraints.Length;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import jakarta.persistence.Column;
@@ -18,7 +21,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+
 @Entity
 public class User {
 
@@ -45,9 +48,11 @@ public class User {
     private String token;
     private Role role;
     @ManyToMany(mappedBy = "users")
+    @JsonBackReference
     private List<Course> courses;
     
     @ManyToMany(mappedBy = "users")
+    @JsonIgnore
     private List<Session> sessions;
     
     @ManyToOne
