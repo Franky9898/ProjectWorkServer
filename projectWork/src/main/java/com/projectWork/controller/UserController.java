@@ -43,7 +43,6 @@ public class UserController
 
 	@Autowired
 	private UserRepository userRepository;
-
 	List<User> users = new ArrayList<>();
 
 	@Autowired
@@ -97,13 +96,13 @@ public class UserController
 			result.put("errore", "L'email è già presente nel database.");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
 		}
-		if (user.getSecretCode() == 9999)
+		/*if (user.getSecretCode() == 9999)
 		{
 			user.setRole(Role.COACH);
 		} else
 		{
 			user.setRole(Role.USER);
-		}
+		}*/
 		User newUser = userRepository.save(user);
 		return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
 	}
@@ -152,16 +151,39 @@ public class UserController
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(user);
 	}
 
-	@PutMapping("/addUserSession/{userId}/{sessionId}")
+	@PostMapping("/addUserSession/{userId}/{sessionId}")
 	public ResponseEntity<Object> addUserSession(@PathVariable Long userId, @PathVariable Long sessionId)
 	{
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not Found"));
 
 		Session session = sessionRepository.findById(sessionId).orElseThrow(() -> new ResourceNotFoundException("Session not Found"));
+			
+		List<Session> sessions = user.getSessions();
+	    List<User> users = session.getUsers();
+	    
+		users.add(user);
 		sessions.add(session);
-		user.setSessions(sessions);
+		
 		userRepository.save(user);
+		sessionRepository.save(session);
+		
 		return ResponseEntity.status(HttpStatus.CREATED).body(user);
 	}
+	
+	/*@PutMapping("/addUserSession/{userId}/{sessionId}")
+	public ResponseEntity<Object> updateUserSession(@PathVariable Long userId, @PathVariable Long sessionId)
+	{
+		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not Found"));
+
+		Session session = sessionRepository.findById(sessionId).orElseThrow(() -> new ResourceNotFoundException("Session not Found"));
+	    
+		users.add(user);
+		sessions.add(session);
+		
+		userRepository.save(user);
+		sessionRepository.save(session);
+		
+		return ResponseEntity.status(HttpStatus.CREATED).body(user);
+	}*/
 
 }

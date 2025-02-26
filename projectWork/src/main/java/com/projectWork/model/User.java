@@ -25,42 +25,42 @@ import jakarta.validation.constraints.NotBlank;
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class User
 {
-
 	public enum Role
 	{
 		USER, COACH, ADMIN
 	}
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-	@NotBlank(message = "Nome obbligatorio.")
-	private String firstName;
-
-	@NotBlank(message = "Cognome obbligatorio.")
-	private String lastName;
-
-	@Email(message = "L'email deve essere valida.")
-	@Column(unique = true)
-	private String email;
-
-	@Length(min = 8, message = "La password deve essere composta da almeno otto (8) caratteri.")
-	@NotBlank(message = "Password obbligatoria")
-	private String password;
-
-	private Integer secretCode;
-	private String token;
-	private Role role;
-	@ManyToMany(mappedBy = "users")
-	private List<Course> courses;
-
-	@ManyToMany(mappedBy = "users")
-	@JsonIgnore
-	private List<Session> sessions;
-
-	@ManyToOne
-	@JoinColumn(name = "gym_id")
-	private Gym gym;
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @NotBlank(message = "Nome obbligatorio.")
+    private String firstName;
+    
+    @NotBlank(message = "Cognome obbligatorio.")
+    private String lastName;
+    
+    @Email(message = "L'email deve essere valida.")
+    @Column(unique=true)
+    private String email;
+    
+    @Length(min=8, message="La password deve essere composta da almeno otto (8) caratteri.")
+    @NotBlank(message = "Password obbligatoria")
+    private String password;
+    
+    private Integer secretCode;
+    private String token;
+    private Role role;
+    @ManyToMany(mappedBy = "users")
+    @JsonIgnore
+    private List<Course> courses;
+    
+    @ManyToMany(mappedBy = "users")
+    @JsonIgnore
+    private List<Session> sessions;
+    
+    @ManyToOne
+    @JoinColumn(name = "gym_id")
+    private Gym gym;
 
 	public User()
 	{
