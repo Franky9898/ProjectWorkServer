@@ -9,11 +9,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,11 +19,12 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.projectWork.repository.CourseRepository;
-import com.projectWork.repository.UserRepository;
 import com.projectWork.model.Course;
+import com.projectWork.model.Gym;
 import com.projectWork.model.User;
 import com.projectWork.model.User.Role;
+import com.projectWork.repository.CourseRepository;
+import com.projectWork.repository.UserRepository;
 
 @RestController
 @RequestMapping("/courses")
@@ -44,7 +43,7 @@ public class CoachController
 	{	
 		return courseRepository.findAll();
 	}
-
+	
 	@GetMapping("/coachCourses")
 	public ResponseEntity<Object> showCourse(@RequestHeader("Authorization") String authorizationHeader)
 	{
@@ -133,7 +132,6 @@ public class CoachController
 			result = "User not found";
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
 		}
-
 		String newCoachEmail = body.get("email");
 		Optional<User> newCoachOpt = userRepository.findByEmail(newCoachEmail);
 		if (!newCoachOpt.isPresent())
@@ -206,6 +204,31 @@ public class CoachController
 		userRepository.saveAll(Arrays.asList(user, newCoach));
 		result = "Coach aggiunto con successo al corso selezionato";
 		return ResponseEntity.ok(result);
+	}
+	
+	@GetMapping("/coachInSameGym")
+	public ResponseEntity<Object> getCoachInSameGym(@RequestHeader("Authorization") String authorizationHeader) 
+	{
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+		{
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Errore: Header Authorization mancante o formato errato.");
+		}
+
+		String token = authorizationHeader.substring(7);
+		Optional<User> userOpt = userRepository.findByToken(token);
+		if (!userOpt.isPresent())
+		{
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utente non trovato.");
+		}
+		User user = userOpt.get();
+		if (!(user.getRole() == Role.COACH && user.getSecretCode() == 9999))
+		{
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Utente non autorizzato.");
+		}
+		Gym gym = user.getGym();
+		List<User> users = gym.getUsers();
+		List<User> coaches = users.stream().filter(userz -> userz.getRole() == User.Role.COACH).collect(Collectors.toList());
+		return ResponseEntity.ok(coaches);
 	}
 
 }
