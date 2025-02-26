@@ -48,7 +48,7 @@ public class User {
     private String token;
     private Role role;
     @ManyToMany(mappedBy = "users")
-    @JsonBackReference
+    @JsonIgnore
     private List<Course> courses;
     
     @ManyToMany(mappedBy = "users")

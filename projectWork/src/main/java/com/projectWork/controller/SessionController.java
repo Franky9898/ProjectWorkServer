@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.projectWork.model.Course;
 import com.projectWork.model.Session;
 import com.projectWork.model.User;
+import com.projectWork.repository.CourseRepository;
 import com.projectWork.repository.SessionRepository;
 import com.projectWork.repository.UserRepository;
 import com.projectWork.service.SessionService;
@@ -35,9 +37,21 @@ public class SessionController
 	@Autowired
 	private UserRepository userRepository;
 	
+	@Autowired
+	private CourseRepository courseRepository;
+	
 	@GetMapping("/showSessions")
 	public List <Session> showAllSessions(){
 		return sessionRepository.findAll();
+	}
+	
+	@GetMapping("/showSessionsByCourseId/{id}")
+	public List <Session> showSessionsByCourseId(@PathVariable Long id)
+	{
+		Optional <Course> courseOpt = courseRepository.findById(id);
+		Course course = courseOpt.get();
+		List <Session> sessions = course.getSessions();
+		return sessions;
 	}
 
 	@PostMapping
