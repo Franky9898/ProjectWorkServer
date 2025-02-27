@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -149,10 +150,21 @@ public class UserController
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(user);
 	}
 
-	@PostMapping("/addUserSession/{userId}/{sessionId}")
-	public ResponseEntity<Object> addUserSession(@PathVariable Long userId, @PathVariable Long sessionId)
+	@PostMapping("/addUserSession/{sessionId}")
+	public ResponseEntity<Object> addUserSession(@RequestHeader("Authorization") String authorizationHeader, @PathVariable Long sessionId)
 	{
-		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not Found"));
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+		{
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Errore: Header Authorization mancante o formato errato.");
+		}
+
+		String token = authorizationHeader.substring(7);
+		Optional<User> userOpt = userRepository.findByToken(token);
+		if (!userOpt.isPresent())
+		{
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User non trovato.");
+		}
+		User user = userOpt.get();
 
 		Session session = sessionRepository.findById(sessionId).orElseThrow(() -> new ResourceNotFoundException("Session not Found"));
 			
@@ -166,6 +178,29 @@ public class UserController
 		sessionRepository.save(session);
 		
 		return ResponseEntity.status(HttpStatus.CREATED).body(user);
+	}
+	
+	@DeleteMapping("/deleteUser")
+	public ResponseEntity<Object> deleteUser(@RequestHeader("Authorization") String authorizationHeader){
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+		{
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Errore: Header Authorization mancante o formato errato.");
+		}
+
+		String token = authorizationHeader.substring(7);
+		Optional<User> userOpt = userRepository.findByToken(token);
+		if (!userOpt.isPresent())
+		{
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User non trovato.");
+		}
+		User user = userOpt.get();
+	    for (Session session : user.getSessions()) {
+	        session.getUsers().remove(user);
+	    }
+	    
+	    userRepository.delete(user);
+
+	    return ResponseEntity.status(HttpStatus.OK).body("User eliminato con successo.");
 	}
 	
 	/*@PutMapping("/addUserSession/{userId}/{sessionId}")
