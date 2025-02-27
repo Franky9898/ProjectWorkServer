@@ -1,5 +1,6 @@
 package com.projectWork.controller;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,6 +45,25 @@ public class SessionController
 	public List <Session> showAllSessions(){
 		return sessionRepository.findAll();
 	}
+	
+	@GetMapping("/showUserSessions")
+	public List<Session> showAllUserSessions(@RequestHeader("Authorization") String authorizationHeader) {
+	    if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+	        return null;
+	    }
+
+	    String token = authorizationHeader.substring(7);
+	    Optional<User> userOpt = userRepository.findByToken(token);
+	    if (!userOpt.isPresent()) {
+	    	return null;
+	    }
+
+	    User user = userOpt.get();
+	    List<Session> userSessions = sessionRepository.findByUsersContaining(user);
+	    
+	    return userSessions;
+	}
+
 	
 	@GetMapping("/showSessionsByCourseId/{id}")
 	public List <Session> showSessionsByCourseId(@PathVariable Long id)
