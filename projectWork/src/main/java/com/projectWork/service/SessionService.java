@@ -46,7 +46,7 @@ public class SessionService
 		Course courseFromDB = courseRepository.findByTitle(session.getCourse().getTitle()).orElseThrow(() -> new RuntimeException("Corso non trovato"));
 		session.setCourse(courseFromDB);
 		WeekDay weekDayFromDB = weekDayRepository.findById(session.getSessionDay().getId()).orElseThrow(() -> new RuntimeException("WeekDay non trovato"));
-		session.setSessionDay(weekDayFromDB);
+		session.setSessionDay(weekDayFromDB); //placeholder
 		String result;
 		if (!isRoomAvailable(roomFromDB, session.getStartingTime(), session.getEndingTime()))
 		{
