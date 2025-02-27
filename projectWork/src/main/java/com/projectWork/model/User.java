@@ -21,9 +21,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-
 @Entity
-public class User {
+public class User
+{
 
     public enum Role { USER, COACH, ADMIN }
     
@@ -47,6 +47,7 @@ public class User {
     private Integer secretCode;
     private String token;
     private Role role;
+    
     @ManyToMany(mappedBy = "users")
     @JsonIgnore
     private List<Course> courses;
@@ -58,8 +59,10 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "gym_id")
     private Gym gym;
-
-	public User() {}
+    
+	public User()
+	{
+	}
 
 	public Long getId()
 	{
@@ -160,14 +163,15 @@ public class User {
 	{
 		this.sessions = sessions;
 	}
-	
-	public Integer getSecretCode() {
+
+	public Integer getSecretCode()
+	{
 		return secretCode;
 	}
-	
-	public void setSecretCode(Integer secretCode) {
+
+	public void setSecretCode(Integer secretCode)
+	{
 		this.secretCode = secretCode;
 	}
-	
-	
+
 }
