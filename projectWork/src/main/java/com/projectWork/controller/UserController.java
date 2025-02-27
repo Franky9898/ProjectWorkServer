@@ -1,6 +1,7 @@
 package com.projectWork.controller;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,11 +20,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.projectWork.repository.CourseRepository;
-import com.projectWork.repository.GymRepository;
-import com.projectWork.repository.SessionRepository;
-//import com.projectWork.auth.TokenService;
-import com.projectWork.repository.UserRepository;
 import com.projectWork.exception.ResourceNotFoundException;
 import com.projectWork.model.Course;
 import com.projectWork.model.Gym;
@@ -31,9 +27,11 @@ import com.projectWork.model.Session;
 //import com.projectWork.auth.AuthUser;
 import com.projectWork.model.User;
 import com.projectWork.model.User.Role;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.projectWork.repository.CourseRepository;
+import com.projectWork.repository.GymRepository;
+import com.projectWork.repository.SessionRepository;
+//import com.projectWork.auth.TokenService;
+import com.projectWork.repository.UserRepository;
 
 @RestController
 @RequestMapping("/users")
@@ -185,5 +183,24 @@ public class UserController
 		
 		return ResponseEntity.status(HttpStatus.CREATED).body(user);
 	}*/
+	
+	@GetMapping("/userRole")
+	public ResponseEntity<Object> userRole(@RequestHeader("Authorization") String authorizationHeader) 
+	{
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+		{
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Errore: Header Authorization mancante o formato errato.");
+		}
+
+		String token = authorizationHeader.substring(7);
+		Optional<User> userOpt = userRepository.findByToken(token);
+		if (!userOpt.isPresent())
+		{
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utente non trovato.");
+		}
+		User user = userOpt.get();
+		Role role = user.getRole();
+		return ResponseEntity.ok(Collections.singletonMap("role", role.name()));
+	}
 
 }

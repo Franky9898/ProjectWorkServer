@@ -22,9 +22,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.projectWork.model.Course;
 import com.projectWork.model.Gym;
-import com.projectWork.model.Session;
+import com.projectWork.model.Room;
 import com.projectWork.model.User;
 import com.projectWork.model.User.Role;
+import com.projectWork.model.WeekDay;
 import com.projectWork.repository.CourseRepository;
 import com.projectWork.repository.UserRepository;
 
@@ -277,16 +278,65 @@ public class CoachController
 				Map<String, Object> sessionMap = new HashMap<>();
 				sessionMap.put("title", session.getCourse().getTitle());
 				sessionMap.put("id", session.getId());
-				sessionMap.put("room", session.getRoom());
+				sessionMap.put("room", session.getRoom().getId());
 				sessionMap.put("startingTime", session.getStartingTime());
 				sessionMap.put("endingTime", session.getEndingTime());
-				sessionMap.put("sessionDay", session.getSessionDay());
+				sessionMap.put("sessionDay", session.getSessionDay().getDay());
 				sessionMap.put("participants", session.getUsers().size());
 				return sessionMap;
 			}).collect(Collectors.toList());
 			sessionList.addAll(sessions);
 		}
 		return ResponseEntity.ok(sessionList);
+	}
+	
+	@GetMapping("/gymWeekDays")
+	public ResponseEntity<Object> getWeekDays(@RequestHeader("Authorization") String authorizationHeader) 
+	{
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+		{
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Errore: Header Authorization mancante o formato errato.");
+		}
+
+		String token = authorizationHeader.substring(7);
+		Optional<User> userOpt = userRepository.findByToken(token);
+		if (!userOpt.isPresent())
+		{
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utente non trovato.");
+		}
+		User coach = userOpt.get();
+		if (!(coach.getRole() == Role.COACH && coach.getSecretCode() == 9999))
+		{
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Utente non autorizzato.");
+		}
+		Gym gym = coach.getGym();
+		List<WeekDay> openDays = gym.getOpenDays();
+		return ResponseEntity.ok(openDays);
+		
+	}
+	@GetMapping("/gymRooms")
+	public ResponseEntity<Object> getRooms(@RequestHeader("Authorization") String authorizationHeader) 
+	{
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+		{
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Errore: Header Authorization mancante o formato errato.");
+		}
+
+		String token = authorizationHeader.substring(7);
+		Optional<User> userOpt = userRepository.findByToken(token);
+		if (!userOpt.isPresent())
+		{
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utente non trovato.");
+		}
+		User coach = userOpt.get();
+		if (!(coach.getRole() == Role.COACH && coach.getSecretCode() == 9999))
+		{
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Utente non autorizzato.");
+		}
+		Gym gym = coach.getGym();
+		List<Room> rooms = gym.getRooms();
+		return ResponseEntity.ok(rooms);
+		
 	}
 
 }

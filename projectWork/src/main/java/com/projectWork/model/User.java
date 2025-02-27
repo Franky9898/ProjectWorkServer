@@ -22,13 +22,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 @Entity
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class User
 {
-	public enum Role
-	{
-		USER, COACH, ADMIN
-	}
+	public enum Role { USER, COACH, ADMIN }
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,6 +46,7 @@ public class User
     private Integer secretCode;
     private String token;
     private Role role;
+    
     @ManyToMany(mappedBy = "users")
     @JsonIgnore
     private List<Course> courses;
@@ -62,7 +59,7 @@ public class User
     @JoinColumn(name = "gym_id")
     private Gym gym;
 
-	public User()
+    public User()
 	{
 	}
 
