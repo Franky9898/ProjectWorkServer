@@ -37,8 +37,7 @@ import com.projectWork.repository.UserRepository;
 @RestController
 @RequestMapping("/users")
 @CrossOrigin(origins = {}) // Disabilita richieste CORS da origini esterne
-public class UserController
-{
+public class UserController {
 
 	@Autowired
 	private UserRepository userRepository;
@@ -58,57 +57,46 @@ public class UserController
 	/*
 	 * @Autowired private TokenService tokenService;
 	 */
-	
+
 	@GetMapping("/userDetails")
-	public ResponseEntity<Object> userDetails(@RequestHeader("Authorization") String authorizationHeader) 
-	{
-		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
-		{
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Errore: Header Authorization mancante o formato errato.");
+	public ResponseEntity<Object> userDetails(@RequestHeader("Authorization") String authorizationHeader) {
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body("Errore: Header Authorization mancante o formato errato.");
 		}
 
 		String token = authorizationHeader.substring(7);
 		Optional<User> userOpt = userRepository.findByToken(token);
-		if (!userOpt.isPresent())
-		{
+		if (!userOpt.isPresent()) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utente non trovato.");
 		}
 		User user = userOpt.get();
 		return ResponseEntity.ok(user);
 	}
-	
-	
-	
+
 	@GetMapping("/showUsers/{id}")
-	public Optional<User> showUserById(@PathVariable Long id)
-	{
+	public Optional<User> showUserById(@PathVariable Long id) {
 		Optional<User> user = userRepository.findById(id);
 		return user;
 	}
 
 	@PostMapping("/addUser")
-	public ResponseEntity<Object> addUser(@RequestBody User user)
-	{
+	public ResponseEntity<Object> addUser(@RequestBody User user) {
 		Map<String, String> result = new HashMap<String, String>();
-		if (userRepository.findByEmail(user.getEmail()).isPresent())
-		{
+		if (userRepository.findByEmail(user.getEmail()).isPresent()) {
 			result.put("errore", "L'email è già presente nel database.");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
 		}
-		/*if (user.getSecretCode() == 9999)
-		{
-			user.setRole(Role.COACH);
-		} else
-		{
-			user.setRole(Role.USER);
-		}*/
+		/*
+		 * if (user.getSecretCode() == 9999) { user.setRole(Role.COACH); } else {
+		 * user.setRole(Role.USER); }
+		 */
 		User newUser = userRepository.save(user);
 		return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
 	}
 
 	@PutMapping("/addUserGym/{userId}/{gymId}")
-	public ResponseEntity<Object> updateUserGym(@PathVariable Long userId, @PathVariable Long gymId)
-	{
+	public ResponseEntity<Object> updateUserGym(@PathVariable Long userId, @PathVariable Long gymId) {
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not Found"));
 		Gym gym = gymRepository.findById(gymId).orElseThrow(() -> new ResourceNotFoundException("Gym not Found"));
 		user.setGym(gym);
@@ -117,8 +105,7 @@ public class UserController
 	}
 
 	@PostMapping("/addUserGym/{userId}/{gymId}")
-	public ResponseEntity<Object> addUserGym(@PathVariable Long userId, @PathVariable Long gymId)
-	{
+	public ResponseEntity<Object> addUserGym(@PathVariable Long userId, @PathVariable Long gymId) {
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not Found"));
 
 		Gym gym = gymRepository.findById(gymId).orElseThrow(() -> new ResourceNotFoundException("Gym not Found"));
@@ -128,14 +115,13 @@ public class UserController
 	}
 
 	@PutMapping("/addUserCourse/{userId}/{courseId}")
-	public ResponseEntity<Object> addUserCourse(@PathVariable Long userId, @PathVariable Long courseId)
-	{
+	public ResponseEntity<Object> addUserCourse(@PathVariable Long userId, @PathVariable Long courseId) {
 		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not Found"));
 
-		Course course = courseRepository.findById(courseId).orElseThrow(() -> new ResourceNotFoundException("Course not Found"));
+		Course course = courseRepository.findById(courseId)
+				.orElseThrow(() -> new ResourceNotFoundException("Course not Found"));
 
-		if (user.getRole() == Role.COACH && user.getSecretCode() == 9999)
-		{
+		if (user.getRole() == Role.COACH && user.getSecretCode() == 9999) {
 			users.add(user);
 			courses.add(course);
 
@@ -151,76 +137,93 @@ public class UserController
 	}
 
 	@PostMapping("/addUserSession/{sessionId}")
-	public ResponseEntity<Object> addUserSession(@RequestHeader("Authorization") String authorizationHeader, @PathVariable Long sessionId)
-	{
-		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
-		{
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Errore: Header Authorization mancante o formato errato.");
+	public ResponseEntity<Object> addUserSession(@RequestHeader("Authorization") String authorizationHeader,
+			@PathVariable Long sessionId) {
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body("Errore: Header Authorization mancante o formato errato.");
 		}
 
 		String token = authorizationHeader.substring(7);
 		Optional<User> userOpt = userRepository.findByToken(token);
-		if (!userOpt.isPresent())
-		{
+		if (!userOpt.isPresent()) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User non trovato.");
 		}
 		User user = userOpt.get();
 
-		Session session = sessionRepository.findById(sessionId).orElseThrow(() -> new ResourceNotFoundException("Session not Found"));
-			
+		Session session = sessionRepository.findById(sessionId)
+				.orElseThrow(() -> new ResourceNotFoundException("Session not Found"));
+
 		List<Session> sessions = user.getSessions();
-	    List<User> users = session.getUsers();
-	    
+		List<User> users = session.getUsers();
+
 		users.add(user);
 		sessions.add(session);
-		
+
 		userRepository.save(user);
 		sessionRepository.save(session);
-		
+
 		return ResponseEntity.status(HttpStatus.CREATED).body(user);
 	}
-	
+
 	@DeleteMapping("/deleteUser")
-	public ResponseEntity<Object> deleteUser(@RequestHeader("Authorization") String authorizationHeader){
-		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
-		{
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Errore: Header Authorization mancante o formato errato.");
+	public ResponseEntity<Object> deleteUser(@RequestHeader("Authorization") String authorizationHeader) {
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body("Errore: Header Authorization mancante o formato errato.");
 		}
 
 		String token = authorizationHeader.substring(7);
 		Optional<User> userOpt = userRepository.findByToken(token);
-		if (!userOpt.isPresent())
-		{
+		if (!userOpt.isPresent()) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User non trovato.");
 		}
 		User user = userOpt.get();
-	    for (Session session : user.getSessions()) {
-	        session.getUsers().remove(user);
-	    }
-	    
-	    userRepository.delete(user);
+		for (Session session : user.getSessions()) {
+			session.getUsers().remove(user);
+		}
 
-	    return ResponseEntity.status(HttpStatus.OK).body("User eliminato con successo.");
+		userRepository.delete(user);
+
+		return ResponseEntity.status(HttpStatus.OK).body("User eliminato con successo.");
 	}
-	
-	/*@PutMapping("/addUserSession/{userId}/{sessionId}")
-	public ResponseEntity<Object> updateUserSession(@PathVariable Long userId, @PathVariable Long sessionId)
-	{
-		User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not Found"));
 
-		Session session = sessionRepository.findById(sessionId).orElseThrow(() -> new ResourceNotFoundException("Session not Found"));
-	    
-		users.add(user);
-		sessions.add(session);
-		
-		userRepository.save(user);
-		sessionRepository.save(session);
-		
-		return ResponseEntity.status(HttpStatus.CREATED).body(user);
-	}*/
-	
+	/*
+	 * @PutMapping("/addUserSession/{userId}/{sessionId}") public
+	 * ResponseEntity<Object> updateUserSession(@PathVariable Long
+	 * userId, @PathVariable Long sessionId) { User user =
+	 * userRepository.findById(userId).orElseThrow(() -> new
+	 * ResourceNotFoundException("User not Found"));
+	 * 
+	 * Session session = sessionRepository.findById(sessionId).orElseThrow(() -> new
+	 * ResourceNotFoundException("Session not Found"));
+	 * 
+	 * users.add(user); sessions.add(session);
+	 * 
+	 * userRepository.save(user); sessionRepository.save(session);
+	 * 
+	 * return ResponseEntity.status(HttpStatus.CREATED).body(user); }
+	 */
+
 	@GetMapping("/userRole")
-	public ResponseEntity<Object> userRole(@RequestHeader("Authorization") String authorizationHeader) 
+	public ResponseEntity<Object> userRole(@RequestHeader("Authorization") String authorizationHeader) {
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body("Errore: Header Authorization mancante o formato errato.");
+		}
+
+		String token = authorizationHeader.substring(7);
+		Optional<User> userOpt = userRepository.findByToken(token);
+		if (!userOpt.isPresent()) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utente non trovato.");
+		}
+		User user = userOpt.get();
+		Role role = user.getRole();
+		return ResponseEntity.ok(Collections.singletonMap("role", role.name()));
+	}
+
+	@PutMapping("/editPassword")
+	public ResponseEntity<Object> editUserPassword(@RequestHeader("Authorization") String authorizationHeader, @RequestBody Map<String, String> requestBody) 
 	{
 		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
 		{
@@ -234,8 +237,10 @@ public class UserController
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utente non trovato.");
 		}
 		User user = userOpt.get();
-		Role role = user.getRole();
-		return ResponseEntity.ok(Collections.singletonMap("role", role.name()));
+		String newPassword = requestBody.get("password");
+		user.setPassword(newPassword);
+		userRepository.save(user);
+		return ResponseEntity.ok(Collections.singletonMap("password cambiata correttamente dell'utente: ", user.getFirstName()));
 	}
 
 }
