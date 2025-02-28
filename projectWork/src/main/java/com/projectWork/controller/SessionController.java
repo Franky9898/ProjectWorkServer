@@ -1,8 +1,12 @@
 package com.projectWork.controller;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,46 +35,60 @@ public class SessionController
 {
 	@Autowired
 	private SessionRepository sessionRepository;
-	
+
 	@Autowired
-    private SessionService sessionService;
+	private SessionService sessionService;
 
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Autowired
 	private CourseRepository courseRepository;
-	
+
 	@GetMapping("/showSessions")
-	public List <Session> showAllSessions(){
-		return sessionRepository.findAll();
-	}
-	
-	@GetMapping("/showUserSessions")
-	public List<Session> showAllUserSessions(@RequestHeader("Authorization") String authorizationHeader) {
-	    if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-	        return null;
-	    }
-
-	    String token = authorizationHeader.substring(7);
-	    Optional<User> userOpt = userRepository.findByToken(token);
-	    if (!userOpt.isPresent()) {
-	    	return null;
-	    }
-
-	    User user = userOpt.get();
-	    List<Session> userSessions = sessionRepository.findByUsersContaining(user);
-	    
-	    return userSessions;
-	}
-
-	
-	@GetMapping("/showSessionsByCourseId/{id}")
-	public List <Session> showSessionsByCourseId(@PathVariable Long id)
+	public List<Map<String, Object>> showAllSessions()
 	{
-		Optional <Course> courseOpt = courseRepository.findById(id);
+		List<Session> sessions = sessionRepository.findAll();
+		List<Map<String, Object>> sessionsList = new ArrayList<>();
+		for(Session session : sessions) 
+		{
+			Map<String, Object> sessionMap = new HashMap<>();
+			sessionMap.put("startingTime", session.getStartingTime());
+			sessionMap.put("title", session.getCourse().getTitle());
+			sessionMap.put("id", session.getId());
+			sessionMap.put("description", session.getCourse().getDescription());
+			sessionsList.add(sessionMap);
+		}
+		return sessionsList;
+	}
+
+	@GetMapping("/showUserSessions")
+	public List<Session> showAllUserSessions(@RequestHeader("Authorization") String authorizationHeader)
+	{
+		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+		{
+			return null;
+		}
+
+		String token = authorizationHeader.substring(7);
+		Optional<User> userOpt = userRepository.findByToken(token);
+		if (!userOpt.isPresent())
+		{
+			return null;
+		}
+
+		User user = userOpt.get();
+		List<Session> userSessions = sessionRepository.findByUsersContaining(user);
+
+		return userSessions;
+	}
+
+	@GetMapping("/showSessionsByCourseId/{id}")
+	public List<Session> showSessionsByCourseId(@PathVariable Long id)
+	{
+		Optional<Course> courseOpt = courseRepository.findById(id);
 		Course course = courseOpt.get();
-		List <Session> sessions = course.getSessions();
+		List<Session> sessions = course.getSessions();
 		return sessions;
 	}
 
